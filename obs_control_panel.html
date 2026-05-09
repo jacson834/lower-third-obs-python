@@ -380,30 +380,6 @@
             opacity: 0.9;
         }
 
-        .preset-row {
-            display: grid;
-            grid-template-columns: 1.3fr 1fr;
-            gap: 8px;
-            margin-top: 8px;
-        }
-
-        .btn-preset {
-            background: linear-gradient(135deg, #f59e0b, #b45309);
-            color: #fff;
-            border-radius: 8px;
-            border: none;
-            font-size: 11px;
-            font-weight: 700;
-            letter-spacing: 0.3px;
-            text-transform: uppercase;
-            cursor: pointer;
-            padding: 8px 10px;
-        }
-
-        .btn-preset:hover {
-            opacity: 0.93;
-        }
-
         .status-indicator {
             display: inline-block;
             width: 8px;
@@ -657,10 +633,6 @@
                             <option value="solid2">Escuro Solido</option>
                             <option value="transparent">Transparente</option>
                             <option value="custom">Cor Personalizada</option>
-                            <option value="preset-jornal">Preset Fundo: Jornal</option>
-                            <option value="preset-esports">Preset Fundo: Esports</option>
-                            <option value="preset-podcast">Preset Fundo: Podcast</option>
-                            <option value="preset-minimal">Preset Fundo: Minimal Clean</option>
                         </select>
                     </div>
                     <div class="global-group">
@@ -673,15 +645,6 @@
                             Efeito de Maquina de Escrever
                         </label>
                     </div>
-                </div>
-                <div class="preset-row">
-                    <select id="visual-preset">
-                        <option value="jornal">Preset: Jornal</option>
-                        <option value="esports">Preset: Esports</option>
-                        <option value="podcast">Preset: Podcast</option>
-                        <option value="minimal">Preset: Minimal Clean</option>
-                    </select>
-                    <button class="btn-preset" onclick="applyVisualPreset()">Aplicar Preset</button>
                 </div>
                 <button class="global-apply-btn" onclick="applyGlobalSettings()">Aplicar em Todos os Lower Thirds</button>
             </div>
@@ -873,10 +836,6 @@
                             <option value="solid2">Escuro Solido</option>
                             <option value="transparent">Transparente</option>
                             <option value="custom">Cor Personalizada</option>
-                            <option value="preset-jornal">Preset Fundo: Jornal</option>
-                            <option value="preset-esports">Preset Fundo: Esports</option>
-                            <option value="preset-podcast">Preset Fundo: Podcast</option>
-                            <option value="preset-minimal">Preset Fundo: Minimal Clean</option>
                         </select>
                     </div>
                     <div class="form-group" id="custom-color-group-${id}" style="display: none;">
@@ -1049,11 +1008,7 @@
                 gradient1: [[59, 130, 246], [147, 51, 234]],
                 gradient2: [[239, 68, 68], [249, 115, 22]],
                 gradient3: [[16, 185, 129], [20, 184, 166]],
-                gradient4: [[236, 72, 153], [168, 85, 247]],
-                'preset-jornal': [[20, 20, 20], [55, 65, 81]],
-                'preset-esports': [[127, 29, 29], [194, 65, 12]],
-                'preset-podcast': [[6, 78, 59], [13, 148, 136]],
-                'preset-minimal': [[30, 41, 59], [71, 85, 105]]
+                gradient4: [[236, 72, 153], [168, 85, 247]]
             };
 
             if (gradientMap[style]) {
@@ -1235,94 +1190,6 @@
                 alert('✅ Configuracoes globais aplicadas em todos os lower thirds!');
             }
             saveSettings();
-        }
-
-        function applyVisualPreset() {
-            const presetKey = document.getElementById('visual-preset').value;
-            const presets = {
-                jornal: {
-                    transition: 'slide',
-                    duration: '6',
-                    animIn: '0.6',
-                    animOut: '0.5',
-                    bgStyle: 'preset-jornal',
-                    transparency: '92',
-                    typewriter: false,
-                    fontFamily: 'Open Sans',
-                    nameSize: '34',
-                    titleSize: '21',
-                    nameColor: '#ffffff',
-                    titleColor: '#facc15'
-                },
-                esports: {
-                    transition: 'glitch',
-                    duration: '5',
-                    animIn: '0.7',
-                    animOut: '0.45',
-                    bgStyle: 'preset-esports',
-                    transparency: '96',
-                    typewriter: false,
-                    fontFamily: 'Oswald',
-                    nameSize: '38',
-                    titleSize: '22',
-                    nameColor: '#f8fafc',
-                    titleColor: '#fb923c'
-                },
-                podcast: {
-                    transition: 'fade',
-                    duration: '7',
-                    animIn: '0.8',
-                    animOut: '0.6',
-                    bgStyle: 'preset-podcast',
-                    transparency: '90',
-                    typewriter: true,
-                    fontFamily: 'Poppins',
-                    nameSize: '33',
-                    titleSize: '20',
-                    nameColor: '#f8fafc',
-                    titleColor: '#86efac'
-                },
-                minimal: {
-                    transition: 'slide',
-                    duration: '6',
-                    animIn: '0.5',
-                    animOut: '0.45',
-                    bgStyle: 'preset-minimal',
-                    transparency: '88',
-                    typewriter: false,
-                    fontFamily: 'Montserrat',
-                    nameSize: '32',
-                    titleSize: '19',
-                    nameColor: '#f8fafc',
-                    titleColor: '#cbd5e1'
-                }
-            };
-
-            const preset = presets[presetKey];
-            if (!preset) return;
-
-            document.getElementById('global-transition').value = preset.transition;
-            document.getElementById('global-duration').value = preset.duration;
-            document.getElementById('global-anim-in').value = preset.animIn;
-            document.getElementById('global-anim-out').value = preset.animOut;
-            document.getElementById('global-bg-style').value = preset.bgStyle;
-            document.getElementById('global-transparency').value = preset.transparency;
-            document.getElementById('global-typewriter').checked = preset.typewriter;
-            document.getElementById('global-font-family').value = preset.fontFamily;
-            document.getElementById('global-name-size').value = preset.nameSize;
-            document.getElementById('global-title-size').value = preset.titleSize;
-
-            applyGlobalSettings(false);
-
-            for (let i = 1; i <= panelCount; i++) {
-                const nameColorEl = document.getElementById(`name-color-${i}`);
-                const titleColorEl = document.getElementById(`title-color-${i}`);
-                if (nameColorEl) nameColorEl.value = preset.nameColor;
-                if (titleColorEl) titleColorEl.value = preset.titleColor;
-            }
-
-            saveSettings();
-            alert('🎛 Preset visual aplicado com sucesso!');
         }
 
         function toggleAutoSequence() {
