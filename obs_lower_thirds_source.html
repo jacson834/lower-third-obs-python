@@ -635,6 +635,7 @@
     <script>
         const CONTROL_CHANNEL_NAME = 'obs-lower-thirds-control';
         const CONTROL_MESSAGE_KEY = 'obs-lower-thirds-control-message';
+        const CONTROL_RELAY_ENDPOINT = '/__lt/message';
         let channel = null;
         try {
             channel = new BroadcastChannel(CONTROL_CHANNEL_NAME);
@@ -650,6 +651,8 @@
         let sourceSaveTimeout = null;
         let lastControlMessageTs = 0;
         let lastControlMessageNonce = '';
+        let lastRelaySeq = 0;
+        let relayPollInFlight = false;
 
         function setTransitionClass(element, transition) {
             element.classList.remove(...TRANSITION_CLASSES);
@@ -690,6 +693,29 @@
             } catch (e) {
                 console.warn('Mensagem de fallback invalida:', e);
             }
+        }
+
+        function pollRelayMessage() {
+            if (relayPollInFlight) return;
+            relayPollInFlight = true;
+
+            fetch(`${CONTROL_RELAY_ENDPOINT}?since=${lastRelaySeq}`, {
+                cache: 'no-store'
+            })
+                .then(response => response.json())
+                .then(payload => {
+                    if (!payload || typeof payload.seq !== 'number') return;
+                    lastRelaySeq = Math.max(lastRelaySeq, payload.seq);
+                    if (payload.message) {
+                        processStorageControlMessage(JSON.stringify(payload.message));
+                    }
+                })
+                .catch(() => {
+                    // Relay may be unavailable in local file mode.
+                })
+                .finally(() => {
+                    relayPollInFlight = false;
+                });
         }
 
         function getOrCreateLowerThird(id) {
@@ -1027,6 +1053,8 @@
                 const raw = localStorage.getItem(CONTROL_MESSAGE_KEY);
                 processStorageControlMessage(raw);
             }, 200);
+
+            setInterval(pollRelayMessage, 180);
         });
 
         console.log('OBS Lower Thirds Source Ready');

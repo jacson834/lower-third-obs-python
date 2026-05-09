@@ -1,17 +1,34 @@
 import os
 import socket
 import threading
+import json
 import tkinter as tk
 from tkinter import ttk, messagebox
 from http.server import ThreadingHTTPServer, SimpleHTTPRequestHandler
+from urllib.parse import urlparse, parse_qs
+
+try:
+    import qrcode
+    from PIL import ImageTk
+    QR_AVAILABLE = True
+except Exception:
+    QR_AVAILABLE = False
 
 
-HOST = "127.0.0.1"
+HOST = "0.0.0.0"
 PORT = 5500
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-BASE_URL = f"http://{HOST}:{PORT}"
-PANEL_URL = f"{BASE_URL}/obs_control_panel.html"
-SOURCE_URL = f"{BASE_URL}/obs_lower_thirds_source.html"
+
+
+def get_lan_ip():
+    sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    try:
+        sock.connect(("8.8.8.8", 80))
+        return sock.getsockname()[0]
+    except OSError:
+        return "127.0.0.1"
+    finally:
+        sock.close()
 
 
 class LocalServer:
@@ -21,12 +38,89 @@ class LocalServer:
         self.directory = directory
         self.httpd = None
         self.thread = None
+        self.message_lock = threading.Lock()
+        self.message_seq = 0
+        self.last_message = None
+
+    def _create_handler(self):
+        server_ref = self
+
+        class Handler(SimpleHTTPRequestHandler):
+            def __init__(self, *args, **kwargs):
+                super().__init__(*args, directory=server_ref.directory, **kwargs)
+
+            def _send_json(self, status_code, payload):
+                raw = json.dumps(payload).encode("utf-8")
+                self.send_response(status_code)
+                self.send_header("Content-Type", "application/json; charset=utf-8")
+                self.send_header("Content-Length", str(len(raw)))
+                self.send_header("Cache-Control", "no-store")
+                self.end_headers()
+                self.wfile.write(raw)
+
+            def do_OPTIONS(self):
+                if self.path.startswith("/__lt/message"):
+                    self.send_response(204)
+                    self.send_header("Access-Control-Allow-Origin", "*")
+                    self.send_header("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
+                    self.send_header("Access-Control-Allow-Headers", "Content-Type")
+                    self.end_headers()
+                    return
+                super().do_OPTIONS()
+
+            def do_GET(self):
+                parsed = urlparse(self.path)
+                if parsed.path != "/__lt/message":
+                    return super().do_GET()
+
+                qs = parse_qs(parsed.query)
+                since = 0
+                try:
+                    since = int(qs.get("since", ["0"])[0])
+                except (ValueError, TypeError):
+                    since = 0
+
+                with server_ref.message_lock:
+                    seq = server_ref.message_seq
+                    msg = server_ref.last_message
+
+                if msg is not None and seq > since:
+                    return self._send_json(200, {"seq": seq, "message": msg})
+
+                return self._send_json(200, {"seq": seq, "message": None})
+
+            def do_POST(self):
+                parsed = urlparse(self.path)
+                if parsed.path != "/__lt/message":
+                    return self._send_json(404, {"ok": False, "error": "not_found"})
+
+                content_length = int(self.headers.get("Content-Length", "0"))
+                if content_length <= 0:
+                    return self._send_json(400, {"ok": False, "error": "empty_body"})
+
+                raw = self.rfile.read(content_length)
+                try:
+                    payload = json.loads(raw.decode("utf-8"))
+                except (json.JSONDecodeError, UnicodeDecodeError):
+                    return self._send_json(400, {"ok": False, "error": "invalid_json"})
+
+                if not isinstance(payload, dict) or "action" not in payload:
+                    return self._send_json(400, {"ok": False, "error": "invalid_payload"})
+
+                with server_ref.message_lock:
+                    server_ref.message_seq += 1
+                    server_ref.last_message = payload
+                    seq = server_ref.message_seq
+
+                return self._send_json(200, {"ok": True, "seq": seq})
+
+        return Handler
 
     def start(self):
         if self.is_running():
             return
 
-        handler = lambda *args, **kwargs: SimpleHTTPRequestHandler(*args, directory=self.directory, **kwargs)
+        handler = self._create_handler()
         self.httpd = ThreadingHTTPServer((self.host, self.port), handler)
         self.thread = threading.Thread(target=self.httpd.serve_forever, daemon=True)
         self.thread.start()
@@ -47,11 +141,21 @@ class App(tk.Tk):
     def __init__(self):
         super().__init__()
         self.title("Servidor Local - OBS Lower Thirds")
-        self.geometry("760x300")
-        self.resizable(False, False)
+        self.geometry("920x560")
+        self.minsize(860, 520)
+        self.resizable(True, True)
+
+        self.lan_ip = get_lan_ip()
+        self.local_base_url = f"http://127.0.0.1:{PORT}"
+        self.lan_base_url = f"http://{self.lan_ip}:{PORT}"
+        self.panel_url_local = f"{self.local_base_url}/obs_control_panel.html"
+        self.source_url_local = f"{self.local_base_url}/obs_lower_thirds_source.html"
+        self.panel_url_lan = f"{self.lan_base_url}/obs_control_panel.html"
+        self.source_url_lan = f"{self.lan_base_url}/obs_lower_thirds_source.html"
 
         self.server = LocalServer(HOST, PORT, BASE_DIR)
         self.status_var = tk.StringVar(value="Iniciando servidor...")
+        self.qr_image = None
 
         self._build_ui()
         self.protocol("WM_DELETE_WINDOW", self._on_close)
@@ -66,13 +170,32 @@ class App(tk.Tk):
 
         info = ttk.Label(
             frame,
-            text="Copie as URLs abaixo e cole no OBS (Dock e Browser Source).",
+            text="Use URLs locais no OBS e URL de rede no celular (mesmo Wi-Fi).",
             font=("Segoe UI", 10),
         )
         info.pack(anchor="w", pady=(0, 12))
 
-        self._url_row(frame, "URL do Painel (Dock):", PANEL_URL)
-        self._url_row(frame, "URL da Source (Browser Source):", SOURCE_URL)
+        ttk.Label(frame, text="OBS (neste PC)", font=("Segoe UI", 10, "bold")).pack(anchor="w", pady=(0, 6))
+        self._url_row(frame, "Painel (Dock):", self.panel_url_local)
+        self._url_row(frame, "Source (Browser Source):", self.source_url_local)
+
+        ttk.Separator(frame, orient="horizontal").pack(fill="x", pady=10)
+
+        ttk.Label(frame, text="Celular / outro dispositivo (mesma rede)", font=("Segoe UI", 10, "bold")).pack(anchor="w", pady=(0, 6))
+        self._url_row(frame, "Painel remoto:", self.panel_url_lan)
+
+        qr_box = ttk.Frame(frame)
+        qr_box.pack(fill="x", pady=(10, 4))
+
+        ttk.Label(qr_box, text="QR Code (abrir painel no celular):", width=30).pack(side="left", anchor="n")
+
+        self.qr_label = ttk.Label(qr_box)
+        self.qr_label.pack(side="left", padx=(0, 10))
+
+        if QR_AVAILABLE:
+            self._render_qr(self.panel_url_lan)
+        else:
+            self.qr_label.configure(text="Instale: pip install qrcode pillow")
 
         controls = ttk.Frame(frame)
         controls.pack(fill="x", pady=(12, 8))
@@ -83,15 +206,16 @@ class App(tk.Tk):
         self.stop_btn = ttk.Button(controls, text="Parar Servidor", command=self._stop_server)
         self.stop_btn.pack(side="left", padx=8)
 
-        ttk.Button(controls, text="Copiar URL Painel", command=lambda: self._copy(PANEL_URL)).pack(side="right", padx=(8, 0))
-        ttk.Button(controls, text="Copiar URL Source", command=lambda: self._copy(SOURCE_URL)).pack(side="right")
+        ttk.Button(controls, text="Copiar URL Celular", command=lambda: self._copy(self.panel_url_lan)).pack(side="right", padx=(8, 0))
+        ttk.Button(controls, text="Copiar URL Source OBS", command=lambda: self._copy(self.source_url_local)).pack(side="right", padx=(8, 0))
+        ttk.Button(controls, text="Copiar URL Painel OBS", command=lambda: self._copy(self.panel_url_local)).pack(side="right")
 
         status = ttk.Label(frame, textvariable=self.status_var, font=("Segoe UI", 10, "bold"))
         status.pack(anchor="w", pady=(4, 0))
 
         hint = ttk.Label(
             frame,
-            text="Dica: deixe esta janela aberta enquanto o OBS estiver em uso.",
+            text="Dica: deixe esta janela aberta. Se o celular nao abrir, libere a porta 5500 no firewall (rede privada).",
             font=("Segoe UI", 9),
         )
         hint.pack(anchor="w", pady=(6, 0))
@@ -115,6 +239,16 @@ class App(tk.Tk):
         self.update_idletasks()
         self.status_var.set("URL copiada para a area de transferencia.")
 
+    def _render_qr(self, text):
+        if not QR_AVAILABLE:
+            return
+        qr = qrcode.QRCode(version=1, box_size=3, border=2)
+        qr.add_data(text)
+        qr.make(fit=True)
+        image = qr.make_image(fill_color="black", back_color="white")
+        self.qr_image = ImageTk.PhotoImage(image)
+        self.qr_label.configure(image=self.qr_image, text="")
+
     def _can_bind_port(self):
         test_sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         try:
@@ -130,7 +264,7 @@ class App(tk.Tk):
 
     def _start_server(self):
         if self.server.is_running():
-            self.status_var.set(f"Servidor ativo em {BASE_URL}")
+            self.status_var.set(f"Servidor ativo em {self.local_base_url} | Rede: {self.lan_base_url}")
             self._refresh_buttons()
             return
 
@@ -146,7 +280,7 @@ class App(tk.Tk):
 
         try:
             self.server.start()
-            self.status_var.set(f"Servidor ativo em {BASE_URL}")
+            self.status_var.set(f"Servidor ativo em {self.local_base_url} | Rede: {self.lan_base_url}")
         except Exception as exc:
             self.status_var.set("Falha ao iniciar o servidor.")
             messagebox.showerror("Erro", f"Nao foi possivel iniciar o servidor:\n{exc}")

@@ -661,6 +661,7 @@
     <script>
         const CONTROL_CHANNEL_NAME = 'obs-lower-thirds-control';
         const CONTROL_MESSAGE_KEY = 'obs-lower-thirds-control-message';
+        const CONTROL_RELAY_ENDPOINT = '/__lt/message';
         let channel = null;
         try {
             channel = new BroadcastChannel(CONTROL_CHANNEL_NAME);
@@ -694,6 +695,17 @@
                     _transportNonce: Math.random().toString(36).slice(2)
                 };
                 localStorage.setItem(CONTROL_MESSAGE_KEY, JSON.stringify(envelope));
+
+                fetch(CONTROL_RELAY_ENDPOINT, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(envelope),
+                    keepalive: true
+                }).catch(() => {
+                    // Relay may be unavailable in file:// mode; ignore silently.
+                });
             } catch (e) {
                 console.error('Falha ao enviar fallback via localStorage:', e);
             }
