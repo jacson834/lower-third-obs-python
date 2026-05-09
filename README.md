@@ -1,10 +1,10 @@
 # ULTIMATE OBS LOWER THIRDS SYSTEM
 
-Version: 2.2 (GUI Local Server Update)
+Version: 2.3 (Modern GUI + Remote Security Update)
 
 ## Description
 
-Professional browser-based Lower Thirds system for OBS with dynamic panels, custom fonts, logos, auto-save, and advanced animations.
+Professional browser-based Lower Thirds system for OBS with dynamic panels, custom fonts, logos, auto-save, advanced animations, remote control via phone, and secure access.
 
 ## Key Features
 
@@ -14,28 +14,44 @@ Professional browser-based Lower Thirds system for OBS with dynamic panels, cust
 - Auto-save in browser storage
 - 11+ animation styles
 - Global settings to apply across all panels
+- Remote control from phone (same network)
+- QR Code access for mobile control
+- Password-protected remote panel with rate limiting and session expiration
 
 ---
 
 ## Recommended Mode (Firefox + OBS Compatible)
 
-Use the local HTTP server (do not use `file:///` links).
+Use local HTTP server mode (do not use `file:///` links).
 
-### Option A - GUI (recommended)
+### Option A - Modern GUI (recommended)
 
-Run:
+1. Install dependencies (first run only):
+   - `instalar_gui_moderno.cmd`
+2. Start modern GUI:
+   - `iniciar_servidor_gui_moderno.cmd`
+
+Modern GUI includes:
+
+- Start/stop server
+- OBS local URLs and mobile remote URL
+- Copy buttons for each URL
+- QR Code for mobile panel
+- Remote password field with show/hide toggle
+- Security settings (token expiration, max attempts, lock time)
+- Remote client connection status
+
+### Option B - Classic GUI
 
 - `iniciar_servidor_gui.cmd`
 
-This opens a desktop interface where you can:
+Classic GUI also supports:
 
-- Start/stop the server
-- Copy the panel URL
-- Copy the source URL
+- QR Code
+- Remote password
+- Security settings
 
-### Option B - Terminal only
-
-Run:
+### Option C - Terminal only
 
 - `iniciar_servidor_local.bat`
 
@@ -67,9 +83,38 @@ When the local server is running, use these URLs:
 
 ---
 
-## Quick Helper Scripts
+## Mobile Remote Control (Phone)
 
-- `iniciar_servidor_gui.cmd`: opens desktop GUI and starts server
+1. Keep PC and phone on the same Wi-Fi network
+2. Open GUI and scan the QR Code with your phone
+3. Enter remote password (if enabled)
+4. Control lower thirds from phone; output appears in OBS on PC
+
+---
+
+## Security
+
+Remote panel security includes:
+
+- Password authentication for remote clients
+- Session token required for remote panel access
+- Token expiration (configurable)
+- Login rate limiting by IP (configurable)
+- Temporary lockout after too many failed attempts (configurable)
+
+Default values:
+
+- Token expiration: `720` minutes (12h)
+- Max attempts: `5`
+- Lock time: `120` seconds
+
+---
+
+## Helper Scripts
+
+- `instalar_gui_moderno.cmd`: installs `PySide6`, `qrcode`, `pillow`
+- `iniciar_servidor_gui_moderno.cmd`: opens modern GUI
+- `iniciar_servidor_gui.cmd`: opens classic GUI
 - `iniciar_servidor_local.bat`: starts server in terminal
 - `abrir_painel_e_source.bat`: starts server if needed and opens both URLs in browser
 
@@ -77,8 +122,9 @@ When the local server is running, use these URLs:
 
 ## Notes
 
-- Keep the local server running while using OBS.
-- If port `5500` is in use, close the other process using that port.
+- Keep the server running while using OBS.
+- If port `5500` is in use, close the conflicting process.
+- If phone access fails, allow port `5500` in Windows Firewall (private network).
 
 ---
 
