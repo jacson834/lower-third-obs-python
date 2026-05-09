@@ -6,6 +6,25 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Controle OBS Lower Thirds</title>
     <style>
+        @import url('https://fonts.googleapis.com/css2?family=Manrope:wght@500;600;700;800&display=swap');
+
+        :root {
+            --bg-0: #06131a;
+            --bg-1: #0c1f29;
+            --bg-2: #122b36;
+            --panel: rgba(12, 31, 41, 0.82);
+            --panel-border: rgba(138, 180, 198, 0.25);
+            --text: #edf6fa;
+            --muted: #b6cbd6;
+            --accent: #16a3b8;
+            --accent-2: #1f7a8c;
+            --warm: #f59e0b;
+            --danger: #ef4444;
+            --success: #10b981;
+            --input-bg: rgba(8, 23, 31, 0.65);
+            --input-border: rgba(143, 182, 198, 0.3);
+            --shadow: 0 10px 26px rgba(2, 8, 12, 0.35);
+        }
         * {
             margin: 0;
             padding: 0;
@@ -13,12 +32,15 @@
         }
 
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #1e1e1e 0%, #2d2d2d 100%);
-            color: #ffffff;
-            padding: 10px;
+            font-family: 'Manrope', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background:
+                radial-gradient(1200px 520px at 5% 0%, rgba(22, 163, 184, 0.2) 0%, rgba(22, 163, 184, 0) 60%),
+                radial-gradient(900px 500px at 100% 100%, rgba(245, 158, 11, 0.12) 0%, rgba(245, 158, 11, 0) 58%),
+                linear-gradient(140deg, var(--bg-0) 0%, var(--bg-1) 45%, var(--bg-2) 100%);
+            color: var(--text);
+            padding: 12px;
             min-height: 100vh;
-            font-size: 11px;
+            font-size: 12px;
         }
 
         .container {
@@ -28,20 +50,22 @@
 
         h1 {
             text-align: center;
-            margin-bottom: 10px;
-            font-size: 20px;
-            background: linear-gradient(135deg, #3b82f6, #9333ea);
+            margin-bottom: 12px;
+            font-size: 24px;
+            letter-spacing: 0.4px;
+            background: linear-gradient(120deg, #8ce5f2, #fcd34d);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
         }
 
         .global-controls {
-            background: rgba(139, 92, 246, 0.15);
-            border-radius: 8px;
-            padding: 10px;
-            margin-bottom: 10px;
-            border: 1px solid rgba(139, 92, 246, 0.3);
+            background: var(--panel);
+            border-radius: 12px;
+            padding: 12px;
+            margin-bottom: 12px;
+            border: 1px solid var(--panel-border);
+            box-shadow: var(--shadow);
         }
 
         .storage-warning {
@@ -52,8 +76,8 @@
             max-width: 420px;
             padding: 10px 12px;
             border-radius: 6px;
-            border: 1px solid rgba(245, 158, 11, 0.5);
-            background: rgba(245, 158, 11, 0.15);
+            border: 1px solid rgba(245, 158, 11, 0.6);
+            background: rgba(120, 68, 2, 0.34);
             color: #fde68a;
             font-size: 11px;
             line-height: 1.35;
@@ -77,9 +101,9 @@
         }
 
         .global-controls h3 {
-            font-size: 14px;
+            font-size: 15px;
             margin: 0;
-            color: #a78bfa;
+            color: #87d7e4;
         }
 
         .collapse-icon {
@@ -138,10 +162,11 @@
         }
 
         .lower-third-panel {
-            background: rgba(255, 255, 255, 0.05);
-            border-radius: 6px;
-            padding: 10px;
-            border: 1px solid rgba(255, 255, 255, 0.1);
+            background: var(--panel);
+            border-radius: 12px;
+            padding: 11px;
+            border: 1px solid var(--panel-border);
+            box-shadow: var(--shadow);
         }
 
         .panel-header {
@@ -162,7 +187,7 @@
         }
 
         .panel-number {
-            background: linear-gradient(135deg, #3b82f6, #9333ea);
+            background: linear-gradient(135deg, var(--accent), var(--accent-2));
             width: 20px;
             height: 20px;
             border-radius: 50%;
@@ -192,7 +217,7 @@
             left: 0;
             right: 0;
             bottom: 0;
-            background-color: #555;
+            background-color: #35515b;
             transition: 0.3s;
             border-radius: 20px;
         }
@@ -210,7 +235,7 @@
         }
 
         input:checked+.slider {
-            background: linear-gradient(135deg, #3b82f6, #9333ea);
+            background: linear-gradient(135deg, var(--accent), var(--accent-2));
         }
 
         input:checked+.slider:before {
@@ -232,7 +257,7 @@
             display: block;
             margin-bottom: 3px;
             font-weight: 500;
-            color: #e0e0e0;
+            color: var(--muted);
             font-size: 10px;
         }
 
@@ -243,10 +268,10 @@
         select {
             width: 100%;
             padding: 5px 6px;
-            background: rgba(255, 255, 255, 0.1);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            border-radius: 4px;
-            color: #ffffff;
+            background: var(--input-bg);
+            border: 1px solid var(--input-border);
+            border-radius: 8px;
+            color: var(--text);
             font-size: 11px;
             transition: all 0.3s;
         }
@@ -264,13 +289,14 @@
         input:focus,
         select:focus {
             outline: none;
-            border-color: #3b82f6;
-            background: rgba(255, 255, 255, 0.15);
+            border-color: #4dd0e1;
+            background: rgba(15, 44, 58, 0.95);
+            box-shadow: 0 0 0 2px rgba(77, 208, 225, 0.16);
         }
 
         select option {
-            background: #2d2d2d;
-            color: #ffffff;
+            background: #0f2530;
+            color: var(--text);
         }
 
         .button-group {
@@ -283,7 +309,7 @@
         button {
             padding: 6px 8px;
             border: none;
-            border-radius: 4px;
+            border-radius: 8px;
             font-size: 10px;
             font-weight: 600;
             cursor: pointer;
@@ -321,7 +347,7 @@
 
         .btn-add,
         .btn-auto {
-            background: linear-gradient(135deg, #8b5cf6, #7c3aed);
+            background: linear-gradient(135deg, #0ea5b7, #0b7285);
             color: white;
             padding: 8px 16px;
             font-size: 12px;
@@ -330,7 +356,7 @@
         }
 
         .btn-auto {
-            background: linear-gradient(135deg, #f59e0b, #d97706);
+            background: linear-gradient(135deg, #f59e0b, #b45309);
         }
 
         .btn-auto.active {
@@ -338,7 +364,7 @@
         }
 
         .global-apply-btn {
-            background: linear-gradient(135deg, #8b5cf6, #7c3aed);
+            background: linear-gradient(135deg, #0ea5b7, #0b7285);
             color: white;
             padding: 8px 16px;
             border: none;
@@ -352,6 +378,30 @@
 
         .global-apply-btn:hover {
             opacity: 0.9;
+        }
+
+        .preset-row {
+            display: grid;
+            grid-template-columns: 1.3fr 1fr;
+            gap: 8px;
+            margin-top: 8px;
+        }
+
+        .btn-preset {
+            background: linear-gradient(135deg, #f59e0b, #b45309);
+            color: #fff;
+            border-radius: 8px;
+            border: none;
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 0.3px;
+            text-transform: uppercase;
+            cursor: pointer;
+            padding: 8px 10px;
+        }
+
+        .btn-preset:hover {
+            opacity: 0.93;
         }
 
         .status-indicator {
@@ -386,7 +436,7 @@
         .settings-toggle {
             cursor: pointer;
             font-size: 10px;
-            color: #a78bfa;
+            color: #89dbe7;
             margin-top: 8px;
             display: flex;
             align-items: center;
@@ -416,13 +466,13 @@
             cursor: grab;
             user-select: none;
             font-size: 14px;
-            color: #9ca3af;
+            color: #98b3bf;
             margin-right: 6px;
             transition: color 0.3s;
         }
 
         .drag-handle:hover {
-            color: #a78bfa;
+            color: #8fe3ef;
         }
 
         .drag-handle:active {
@@ -461,8 +511,8 @@
 
         /* Scrollable settings fix */
         .settings-content {
-            background: rgba(0, 0, 0, 0.2);
-            border-radius: 0 0 6px 6px;
+            background: rgba(6, 23, 31, 0.55);
+            border-radius: 0 0 10px 10px;
             margin-top: 5px;
 
             /* Hidden state defaults */
@@ -473,7 +523,7 @@
             transition: all 0.3s ease-out;
 
             scrollbar-width: thin;
-            scrollbar-color: #4b5563 rgba(0, 0, 0, 0.1);
+            scrollbar-color: #2f7f90 rgba(0, 0, 0, 0.15);
         }
 
         .settings-content.open {
@@ -493,7 +543,7 @@
         }
 
         .settings-content::-webkit-scrollbar-thumb {
-            background-color: #4b5563;
+            background-color: #2f7f90;
             border-radius: 4px;
         }
 
@@ -607,6 +657,10 @@
                             <option value="solid2">Escuro Solido</option>
                             <option value="transparent">Transparente</option>
                             <option value="custom">Cor Personalizada</option>
+                            <option value="preset-jornal">Preset Fundo: Jornal</option>
+                            <option value="preset-esports">Preset Fundo: Esports</option>
+                            <option value="preset-podcast">Preset Fundo: Podcast</option>
+                            <option value="preset-minimal">Preset Fundo: Minimal Clean</option>
                         </select>
                     </div>
                     <div class="global-group">
@@ -619,6 +673,15 @@
                             Efeito de Maquina de Escrever
                         </label>
                     </div>
+                </div>
+                <div class="preset-row">
+                    <select id="visual-preset">
+                        <option value="jornal">Preset: Jornal</option>
+                        <option value="esports">Preset: Esports</option>
+                        <option value="podcast">Preset: Podcast</option>
+                        <option value="minimal">Preset: Minimal Clean</option>
+                    </select>
+                    <button class="btn-preset" onclick="applyVisualPreset()">Aplicar Preset</button>
                 </div>
                 <button class="global-apply-btn" onclick="applyGlobalSettings()">Aplicar em Todos os Lower Thirds</button>
             </div>
@@ -810,6 +873,10 @@
                             <option value="solid2">Escuro Solido</option>
                             <option value="transparent">Transparente</option>
                             <option value="custom">Cor Personalizada</option>
+                            <option value="preset-jornal">Preset Fundo: Jornal</option>
+                            <option value="preset-esports">Preset Fundo: Esports</option>
+                            <option value="preset-podcast">Preset Fundo: Podcast</option>
+                            <option value="preset-minimal">Preset Fundo: Minimal Clean</option>
                         </select>
                     </div>
                     <div class="form-group" id="custom-color-group-${id}" style="display: none;">
@@ -982,7 +1049,11 @@
                 gradient1: [[59, 130, 246], [147, 51, 234]],
                 gradient2: [[239, 68, 68], [249, 115, 22]],
                 gradient3: [[16, 185, 129], [20, 184, 166]],
-                gradient4: [[236, 72, 153], [168, 85, 247]]
+                gradient4: [[236, 72, 153], [168, 85, 247]],
+                'preset-jornal': [[20, 20, 20], [55, 65, 81]],
+                'preset-esports': [[127, 29, 29], [194, 65, 12]],
+                'preset-podcast': [[6, 78, 59], [13, 148, 136]],
+                'preset-minimal': [[30, 41, 59], [71, 85, 105]]
             };
 
             if (gradientMap[style]) {
@@ -1118,7 +1189,7 @@
             }
         }
 
-        function applyGlobalSettings() {
+        function applyGlobalSettings(showFeedback = true) {
             const transition = document.getElementById('global-transition').value;
             const duration = document.getElementById('global-duration').value;
             const animIn = document.getElementById('global-anim-in').value;
@@ -1160,8 +1231,98 @@
                 if (titleSizeEl) titleSizeEl.value = titleSize;
             }
 
-            alert('✅ Configuracoes globais aplicadas em todos os lower thirds!');
+            if (showFeedback) {
+                alert('✅ Configuracoes globais aplicadas em todos os lower thirds!');
+            }
             saveSettings();
+        }
+
+        function applyVisualPreset() {
+            const presetKey = document.getElementById('visual-preset').value;
+            const presets = {
+                jornal: {
+                    transition: 'slide',
+                    duration: '6',
+                    animIn: '0.6',
+                    animOut: '0.5',
+                    bgStyle: 'preset-jornal',
+                    transparency: '92',
+                    typewriter: false,
+                    fontFamily: 'Open Sans',
+                    nameSize: '34',
+                    titleSize: '21',
+                    nameColor: '#ffffff',
+                    titleColor: '#facc15'
+                },
+                esports: {
+                    transition: 'glitch',
+                    duration: '5',
+                    animIn: '0.7',
+                    animOut: '0.45',
+                    bgStyle: 'preset-esports',
+                    transparency: '96',
+                    typewriter: false,
+                    fontFamily: 'Oswald',
+                    nameSize: '38',
+                    titleSize: '22',
+                    nameColor: '#f8fafc',
+                    titleColor: '#fb923c'
+                },
+                podcast: {
+                    transition: 'fade',
+                    duration: '7',
+                    animIn: '0.8',
+                    animOut: '0.6',
+                    bgStyle: 'preset-podcast',
+                    transparency: '90',
+                    typewriter: true,
+                    fontFamily: 'Poppins',
+                    nameSize: '33',
+                    titleSize: '20',
+                    nameColor: '#f8fafc',
+                    titleColor: '#86efac'
+                },
+                minimal: {
+                    transition: 'slide',
+                    duration: '6',
+                    animIn: '0.5',
+                    animOut: '0.45',
+                    bgStyle: 'preset-minimal',
+                    transparency: '88',
+                    typewriter: false,
+                    fontFamily: 'Montserrat',
+                    nameSize: '32',
+                    titleSize: '19',
+                    nameColor: '#f8fafc',
+                    titleColor: '#cbd5e1'
+                }
+            };
+
+            const preset = presets[presetKey];
+            if (!preset) return;
+
+            document.getElementById('global-transition').value = preset.transition;
+            document.getElementById('global-duration').value = preset.duration;
+            document.getElementById('global-anim-in').value = preset.animIn;
+            document.getElementById('global-anim-out').value = preset.animOut;
+            document.getElementById('global-bg-style').value = preset.bgStyle;
+            document.getElementById('global-transparency').value = preset.transparency;
+            document.getElementById('global-typewriter').checked = preset.typewriter;
+            document.getElementById('global-font-family').value = preset.fontFamily;
+            document.getElementById('global-name-size').value = preset.nameSize;
+            document.getElementById('global-title-size').value = preset.titleSize;
+
+            applyGlobalSettings(false);
+
+            for (let i = 1; i <= panelCount; i++) {
+                const nameColorEl = document.getElementById(`name-color-${i}`);
+                const titleColorEl = document.getElementById(`title-color-${i}`);
+                if (nameColorEl) nameColorEl.value = preset.nameColor;
+                if (titleColorEl) titleColorEl.value = preset.titleColor;
+            }
+
+            saveSettings();
+            alert('🎛 Preset visual aplicado com sucesso!');
         }
 
         function toggleAutoSequence() {
